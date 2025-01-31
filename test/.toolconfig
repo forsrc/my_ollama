@@ -1,0 +1,20 @@
+{
+    "calculate_average": {
+        "description": "Calculate the average of a list of numbers",
+        "parameters": {
+            "numbers": {
+                "type": "array",
+                "description": "A list of numbers"
+            }
+        }
+    },
+    "calculate_sum": {
+        "description": "Calculate the sum of a list of numbers",
+        "parameters": {
+            "numbers": {
+                "type": "array",
+                "description": "A list of numbers"
+            }
+        }
+    }
+}
