@@ -4,20 +4,17 @@ from src.average_tool import calculate_average
 from src.sum_tool import calculate_sum
 import re
 
-# 定义工具
 TOOLS = {
     'calculate_average': calculate_average,
     'calculate_sum': calculate_sum
 }
 
-# 定义问题
 questions = [
     "What is the average and sum of [1, 2, 3, 4, 5]?",
     "What is the average and sum of [6, 7, 8, 9, 10]?",
 ]
 
 def extract_numbers(question):
-    """从问题中提取数值列表"""
     numbers = re.findall(r'\d+', question)
     return [int(num) for num in numbers]
 

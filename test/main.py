@@ -7,14 +7,14 @@ from src.average_tool import calculate_average
 from src.sum_tool import calculate_sum
 
 
-tools = {
+TOOLS = {
     'calculate_average': calculate_average,
     'calculate_sum': calculate_sum
 }
 
 questions = [
     "What is the average and sum of [1, 2, 3, 4, 5]?",
-    "What is the average and sum of [6, 7, 8, 9, 10]? max is ?",
+    "What is the average and sum of [6, 7, 8, 9, 10]?",
 
 ]
 
