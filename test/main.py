@@ -16,15 +16,13 @@ def main(questions: any):
     results = []
 
     for question in questions:
-        response = ollama.chat(
-            model="llama3.2", messages=[{"role": "user", "content": question}]
-        )
         result_entry = {}
 
         response = ollama.chat(
             model="llama3.2",
             messages=[{"role": "user", "content": question}],
             tools=[calculate_average_tools, calculate_sum_tools],
+            keep_alive=10
         )
 
         tool_calls = response.get("message", {}).get("tool_calls", [])
