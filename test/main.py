@@ -4,62 +4,54 @@ import ollama
 import json
 import re
 from src.average_tool import calculate_average
+from src.average_tool import calculate_average_tools
 from src.sum_tool import calculate_sum
+from src.sum_tool import calculate_sum_tools
 
 
-TOOLS = {
-    'calculate_average': calculate_average,
-    'calculate_sum': calculate_sum
-}
-
-questions = [
-    "What is the average and sum of [1, 2, 3, 4, 5]?",
-    "What is the average and sum of [6, 7, 8, 9, 10]?",
-
-]
-
-def extract_numbers(text):
-    match = re.search(r'\[(.*?)\]', text)
-    if match:
-        try:
-            numbers = list(map(int, match.group(1).split(',')))
-            return numbers
-        except ValueError:
-            return []
-    return []
+TOOLS = {"calculate_average": calculate_average, "calculate_sum": calculate_sum}
 
 
-for question in questions:
-    response = ollama.chat(
-        model='llama3.2',
-        messages=[{'role': 'user', 'content': question}]
-    )
+def main(questions: any):
+    results = []
 
-    response_content = response.get('message', {}).get('content', '')
-    numbers = extract_numbers(question)
+    for question in questions:
+        response = ollama.chat(
+            model="llama3.2", messages=[{"role": "user", "content": question}]
+        )
+        result_entry = {}
 
-    result_dict = {
-        "number": numbers,
-        "calculate_average": json.loads(calculate_average(numbers)),
-        "calculate_sum": json.loads(calculate_sum(numbers))
-    }
+        response = ollama.chat(
+            model="llama3.2",
+            messages=[{"role": "user", "content": question}],
+            tools=[calculate_average_tools, calculate_sum_tools],
+        )
 
-    print(json.dumps(result_dict, indent=2))
+        tool_calls = response.get("message", {}).get("tool_calls", [])
+        for tool_call in tool_calls:
+            tool_name = tool_call.get("function").get("name")
+            args = tool_call.get("function").get("arguments", {})
+            func = TOOLS.get(tool_name, None)
+            if not func:
+                print(f"[E] Tool {tool_name} not recognized")
+                continue
+            param_value = args.get("numbers", "")
+            result_entry["numbers"] = param_value
+            param_numbers = json.loads(param_value)
+            try:
+                result = func(param_numbers)
+                result_entry[tool_name] = json.loads(result)
+            except Exception as e:
+                print(f"[E] Error processing tool {tool_name}: {e}")
 
-"""
-{
-  "number": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "calculate_average": {
-    "average": 3.0
-  },
-  "calculate_sum": {
-    "sum": 15
-  }
-}
-"""
+        results.append(result_entry)
+
+    print(results)
+
+
+if __name__ == "__main__":
+    questions = [
+        "What is the average and sum of [1, 2, 3, 4, 5]?",
+        "What is the average and sum of [6, 7, 8, 9, 10]?",
+    ]
+    main(questions)

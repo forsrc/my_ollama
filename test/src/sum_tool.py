@@ -15,3 +15,16 @@ def calculate_sum(numbers):
         return json.dumps({"error": str(e)})
 
 
+calculate_sum_tools = {
+        "type": "function",
+        "function": {
+            "name": "calculate_sum",
+            "description": "Calculate the sum of a list of numbers, The args must named 'numbers'",
+            "parameters": {
+                "numbers": {
+                "type": "array",
+                "description": "A list of numbers, must named 'numbers'"
+                }
+            },
+        },
+    }
