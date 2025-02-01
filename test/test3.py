@@ -29,11 +29,11 @@ calculate_average_tools = {
         "type": "function",
         "function": {
             "name": "calculate_average",
-            "description": "Calculate the average of a list of numbers",
+            "description": "Calculate the average of a list of numbers, The args must named 'numbers'",
             "parameters": {
                 "numbers": {
                 "type": "array",
-                "description": "A list of numbers"
+                "description": "A list of numbers, must named 'numbers'"
                 }
             },
         },
@@ -43,11 +43,11 @@ calculate_sum_tools = {
         "type": "function",
         "function": {
             "name": "calculate_sum",
-            "description": "Calculate the sum of a list of numbers",
+            "description": "Calculate the sum of a list of numbers, The args must named 'numbers'",
             "parameters": {
                 "numbers": {
                 "type": "array",
-                "description": "A list of numbers"
+                "description": "A list of numbers, must named 'numbers'"
                 }
             },
         },
@@ -77,7 +77,7 @@ results = []
 
 for question in questions:
     numbers = extract_numbers(question)
-    print(f"\nInput numbers: {numbers}")
+    print(f"Input numbers: {numbers}")
     
     response = ollama.chat(
         model='llama3.2',
@@ -89,13 +89,13 @@ for question in questions:
 
     result_entry = {"numbers": numbers}
     
-    print(f"[I] tool_calls: {tool_calls}")
+    #print(f"[I] tool_calls: {tool_calls}")
 
     for tool_call in tool_calls:
         tool_name = tool_call.get("function").get("name")
         args = tool_call.get("function").get("arguments", {})
         
-        print(f"[I] tool_name: {tool_name}, args: {args}")
+        #print(f"[I] tool_name: {tool_name}, args: {args}")
 
         
         if tool_name not in question_to_tool_args:
