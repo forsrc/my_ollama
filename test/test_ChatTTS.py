@@ -12,7 +12,7 @@ from IPython.display import Audio
 
 # Initialize and load the model: 
 chat = ChatTTS.Chat()
-chat.load_models(compile=False) # Set to True for better performance
+chat.load(compile=False) # Set to True for better performance
 
 # Define the text input for inference (Support Batching)
 texts = [
