@@ -9,7 +9,7 @@ from langchain.chains import RetrievalQA
 from tqdm import tqdm  # 进度条库
 
 # 1. 加载 PDF
-pdf_path = "~/Downloads/spring-boot.pdf"  # 替换为你的 PDF 路径
+pdf_path = "./spring-boot.pdf"  # 替换为你的 PDF 路径
 print("📄 正在加载 PDF...")
 loader = PyPDFLoader(pdf_path)
 documents = loader.load()
@@ -24,7 +24,7 @@ print("🧠 加载 Ollama Embeddings...")
 embedding = OllamaEmbeddings(model="llama3.2")  # 可换成 "llama2"、"gemma" 等
 
 # 4. 加载或创建 Chroma 向量数据库
-db_path = "~/test/chroma_db"
+db_path = "./chroma_db"
 try:
     print("📁 尝试加载现有向量数据库...")
     vector_db = Chroma(persist_directory=db_path, embedding_function=embedding)
