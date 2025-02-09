@@ -1,3 +1,5 @@
+# pip install langchain chromadb pypdf ollama tqdm
+
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
