@@ -44,7 +44,7 @@ print("✅ 新数据已追加到向量数据库")
 
 # 6. 进行 RAG 查询（GPU 加速）
 print("🤖 初始化 RAG 处理...")
-llm = Ollama(model="llama3.2", num_gpu_layers=50)  # 让 Ollama 尽可能多使用 GPU
+llm = Ollama(model="llama3.2")
 retriever = vector_db.as_retriever(search_kwargs={"k": 3})
 qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
 
