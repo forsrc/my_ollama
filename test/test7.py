@@ -6,51 +6,68 @@ from langchain_chroma import Chroma
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 from langchain.chains import RetrievalQA
-from tqdm import tqdm  # 进度条库
+from tqdm import tqdm
 
-# 1. 加载 PDF
-pdf_path = "your_file.pdf"  # 替换为你的 PDF 路径
-print("📄 正在加载 PDF...")
-loader = PyPDFLoader(pdf_path)
-documents = loader.load()
+def load_pdf(pdf_path):
+    """加载 PDF 文档"""
+    print(" 正在加载 PDF...")
+    loader = PyPDFLoader(pdf_path)
+    return loader.load()
 
-# 2. 文本分割
-print("📜 正在拆分文本...")
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-chunks = list(tqdm(text_splitter.split_documents(documents), desc="🔹 文本块处理"))
+def split_text(documents):
+    """将文档分割成文本块"""
+    print(" 正在拆分文本...")
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    return list(tqdm(text_splitter.split_documents(documents), desc=" 文本块处理"))
 
-# 3. 加载 Ollama Embeddings（仍然可以用 Qwen2.5）
-print("🧠 加载 Ollama Embeddings...")
-embedding = OllamaEmbeddings(model="qwen2.5")
+def load_or_create_chroma_db(chunks, embedding, db_path):
+    """加载或创建 Chroma 向量数据库"""
+    try:
+        print(" 尝试加载现有向量数据库...")
+        vector_db = Chroma(persist_directory=db_path, embedding_function=embedding)
+        print("✅ 已加载现有向量数据库")
+    except:
+        print("⚡ 创建新的向量数据库...")
+        vector_db = Chroma.from_documents(chunks, embedding, persist_directory=db_path)
+        print("✅ 新数据库创建完成")
+    return vector_db
 
-# 4. 加载或创建 Chroma 向量数据库
-db_path = "./chroma_db"
-try:
-    print("📁 尝试加载现有向量数据库...")
+def add_data_to_chroma_db(vector_db, chunks):
+    """向 Chroma 数据库追加新数据"""
+    print(" 正在追加新数据到数据库...")
+    for chunk in tqdm(chunks, desc="✨ 追加数据进度"):
+        vector_db.add_documents([chunk])
+    print("✅ 新数据已追加到向量数据库")
+
+def setup_rag_pipeline(llm, retriever):
+    """设置 RAG 查询管道"""
+    print(" 初始化 RAG 处理...")
+    return RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
+
+def load_pdf_to_db(pdf_path, embedding, db_path):
+    """加载 PDF 文档到向量数据库"""
+    documents = load_pdf(pdf_path)
+    chunks = split_text(documents)
+    embedding = OllamaEmbeddings(model="shaw/dmeta-embedding-zh")
+    vector_db = load_or_create_chroma_db(chunks, embedding, db_path)
+    add_data_to_chroma_db(vector_db, chunks)
+
+# 主程序
+if __name__ == "__main__":
+    pdf_path = "./spring-boot.pdf"
+    db_path = "./chroma_db"
+
+    embedding = OllamaEmbeddings(model="shaw/dmeta-embedding-zh")
+
+    load_pdf_to_db(pdf_path, embedding, db_path)
+
     vector_db = Chroma(persist_directory=db_path, embedding_function=embedding)
-    print("✅ 已加载现有向量数据库")
-except:
-    print("⚡ 创建新的向量数据库...")
-    vector_db = Chroma.from_documents(chunks, embedding, persist_directory=db_path)
-    vector_db.persist()
-    print("✅ 新数据库创建完成")
+    
+    llm = Ollama(model="qwen2.5")
+    retriever = vector_db.as_retriever(search_kwargs={"k": 3})
+    qa_chain = setup_rag_pipeline(llm, retriever)
 
-# 5. 追加新数据
-print("📥 正在追加新数据到数据库...")
-for chunk in tqdm(chunks, desc="✨ 追加数据进度"):
-    vector_db.add_documents([chunk])
-vector_db.persist()
-print("✅ 新数据已追加到向量数据库")
-
-# 6. 进行 RAG 查询（用 Qwen2.5）
-print("🤖 初始化 RAG 处理...")
-llm = Ollama(model="qwen2.5")  # ✅ 这里替换成 Qwen2.5
-retriever = vector_db.as_retriever(search_kwargs={"k": 3})
-qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
-
-
-# 测试查询
-query = "PDF 里关于 GraalVM 说了什么？"
-print(f"🔎 正在查询: {query}")
-response = qa_chain.run(query)
-print("💡 回答:", response)
+    query = "PDF 里关于 GraalVM 说了什么？具体在哪几个章节提到了?"
+    print(f" 正在查询: {query}")
+    response = qa_chain.run(query)
+    print(" 回答:", response)
